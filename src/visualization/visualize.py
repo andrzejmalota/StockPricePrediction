@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib import rc
 import numpy as np
 from src.utils.io import load
 
@@ -31,6 +32,40 @@ def plot_technical_indicators(dataset, last_days):
     plt.plot(np.log(dataset['momentum']), label='Log Momentum', color='b', linestyle='-')
 
     plt.legend()
+    plt.show()
+
+
+def plot_targets_vs_predictions(targets, predictions):
+    targets = targets.tolist()
+    predictions = [round(y, 2) for y in predictions]
+    fig = plt.figure(figsize=(20, 8))
+    plt.plot(targets, label='targets')
+    plt.plot(predictions, label='predictions')
+    plt.title('Targets vs predicitons')
+    plt.legend()
+    plt.show()
+
+
+def plot_validation_vs_training(model):
+    eval_result = model.evals_result()
+    training_rounds = range(len(eval_result['validation_0']['rmse']))
+    plt.scatter(x=training_rounds, y=eval_result['validation_0']['rmse'], label='Training Error')
+    plt.scatter(x=training_rounds, y=eval_result['validation_1']['rmse'], label='Validation Error')
+    plt.xlabel('Iterations')
+    plt.ylabel('RMSE')
+    plt.title('Training Vs Validation Error')
+    plt.legend()
+    plt.show()
+
+
+def plot_feature_importance(feature_importances):
+    rc('xtick', labelsize=6)
+    rc('ytick', labelsize=6)
+    fig = plt.figure(figsize=(10, 100))
+    plt.xticks(rotation='vertical')
+    plt.barh(range(100), feature_importances.iloc[:100, 1])
+    plt.yticks(range(100), feature_importances.iloc[:100, 0])
+    plt.title('Feature importance')
     plt.show()
 
 

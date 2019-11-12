@@ -2,11 +2,10 @@ import xgboost as xgb
 from sklearn.impute import SimpleImputer
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib import rc
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 from src.utils.io import load, save
+from src.visualization.visualize import *
 
 
 def get_X_y(data):
@@ -71,7 +70,7 @@ def build_model(data, lookback):
     mae = mean_absolute_error(targets_eval, predictions)
     print("MSE: ", mse)
     print("MAE: ", mae)
-    plot_targets_vs_predictions(targets_eval, predictions)
+    # plot_targets_vs_predictions(targets_eval, predictions)
     return model
 
 
@@ -85,76 +84,40 @@ def create_feature_labels(features, lookback):
     return feature_labels
 
 
-def calculate_feature_importances(features, lookback):
-    model = build_model(features, lookback)
+def calculate_feature_importances(features, lookback, model):
     feature_labels = create_feature_labels(features, lookback)
-    feature_df = pd.DataFrame(data=fea)
     importances = model.feature_importances_.astype('float32')
     indices = np.argsort(-importances)
     values = np.c_[feature_labels[indices].reshape(feature_labels.shape[0], 1),
                    importances[indices].reshape(feature_labels.shape[0], 1)]
-    feature_importances = pd.DataFrame(data=values, columns=['feature_labels', 'feature_importances'])
-    return feature_importances, features_df
+    feature_importances = pd.DataFrame(data=values, columns=['feature_labels', 'feature_importance'])
+    return feature_importances
 
 
-def plot_targets_vs_predictions(targets, predictions):
-    targets = targets.tolist()
-    predictions = [round(y, 2) for y in predictions]
-    fig = plt.figure(figsize=(20, 8))
-    plt.plot(targets, label='targets')
-    plt.plot(predictions, label='predictions')
-    plt.title('Targets vs predicitons')
-    plt.legend()
-    plt.show()
+def threshold_features(feature_importances, lookback):
+    threshold = 0.0002
+    feature_importances['feature_importance'] = feature_importances['feature_importance'].astype('float32')
+    filtered_features = feature_importances[feature_importances['feature_importance'] > threshold]['feature_labels']
+    selected_features = []
+    for feature in filtered_features:
+        selected_features.append(feature.replace('_'+feature.split('_')[-1], ''))
+    return list(set(selected_features)), filtered_features
 
 
-def plot_validation_vs_training(model):
-    eval_result = model.evals_result()
-    training_rounds = range(len(eval_result['validation_0']['rmse']))
-    plt.scatter(x=training_rounds, y=eval_result['validation_0']['rmse'], label='Training Error')
-    plt.scatter(x=training_rounds, y=eval_result['validation_1']['rmse'], label='Validation Error')
-    plt.xlabel('Iterations')
-    plt.ylabel('RMSE')
-    plt.title('Training Vs Validation Error')
-    plt.legend()
-    plt.show()
-
-
-def plot_feature_importance(feature_importances):
-    rc('xtick', labelsize=6)
-    rc('ytick', labelsize=6)
-    fig = plt.figure(figsize=(10, 100))
-    plt.xticks(rotation='vertical')
-    plt.barh(range(100), feature_importances.iloc[:100, 1])
-    plt.yticks(range(100), feature_importances.iloc[:100, 0])
-    plt.title('Feature importance')
-    plt.show()
+def select_features():
+    features = load('../../data/interim/features.pickle')
+    lookback = 10
+    model = build_model(features, lookback)
+    feature_importances = calculate_feature_importances(features, lookback, model)
+    # plot_feature_importance(feature_importances)
+    selected_features, selected_features_with_lookback = threshold_features(feature_importances, lookback)
+    print('Selected features: ', selected_features)
+    not_selected_features = list(set(features.columns.to_list()).difference(set(selected_features)))
+    print('Not selected features: ', not_selected_features)
+    save(selected_features, '../../data/interim/selected_features_labels_trees.pickle')
+    save(features[selected_features], '../../data/processed/selected_features_trees.pickle')
+    save(selected_features_with_lookback, '../../data/interim/selected_features_labels_with_lookback_trees.pickle')
 
 
 if __name__ == '__main__':
-    features = load('../../data/interim/features.pickle')
-    lookback = 10
-    feature_importances = calculate_feature_importances(features, lookback)
-    plot_feature_importance(feature_importances)
-    save(feature_importances, '../../data/interim/feature_importances_by_trees.pickle')
-
-
-# def generator(data, lookback, delay, min_index, max_index, shuffle=False, batch_size=128, step=6):
-#     if max_index is None:
-#         max_index = len(data) - delay - 1
-#     i = min_index + lookback
-#     while 1:
-#         if shuffle:
-#             rows = np.random.randint(min_index + lookback, max_index, size=batch_size)
-#         else:
-#             if i + batch_size >= max_index:
-#                 i = min_index + lookback
-#             rows = np.arange(i, min(i + batch_size, max_index))
-#             i += len(rows)
-#         samples = np.zeros((len(rows),lookback // step,data.shape[-1]))
-#         targets = np.zeros((len(rows),))
-#         for j, row in enumerate(rows):
-#             indices = range(rows[j] - lookback, rows[j], step)
-#             samples[j] = data[indices]
-#             targets[j] = data[rows[j] + delay][1]
-#         yield samples, targets
+    select_features()

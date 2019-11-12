@@ -28,16 +28,15 @@ def get_raw_stock_data():
         num_cols = 6
         array = np.full((num_rows, num_cols), fill_value=np.NaN)
 
-        df = pd.DataFrame(data=array, columns=['Date', 'Open', 'Close', 'High', 'Low', 'Volume'])
+        df = pd.DataFrame(data=array, columns=['Date', 'Close', 'Open', 'High', 'Low', 'Volume'])
 
         for i, (date, values) in enumerate(data['Time Series (Daily)'].items()):
-            row = [date, values[columns['Open']], values[columns['Close']], values[columns['High']],
+            row = [date, values[columns['Close']], values[columns['Open']], values[columns['High']],
                    values[columns['Low']], values[columns['Volume']]]
             df.iloc[(num_rows - i - 1), :] = np.array(row)
 
-        df[['Open', 'Close', 'High', 'Low', 'Volume']] = df[['Open', 'Close', 'High', 'Low', 'Volume']].apply(
+        df[['Close', 'Open', 'High', 'Low', 'Volume']] = df[['Close', 'Open', 'High', 'Low', 'Volume']].apply(
             pd.to_numeric)
-        df_num = df.copy(deep=True)
         df['Date'] = pd.to_datetime(df.Date, format='%Y-%m-%d')
         #     df.index = df['Date']
         #     df.drop('Date', axis=1, inplace=True)

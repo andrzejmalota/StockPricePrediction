@@ -4,20 +4,12 @@
 #     *   momentum
 #     *   Bollinger bands
 #     *   MACD
-#
-#
 # 2. ARIMA
 # 3. Correlated assets:
 #     -companies similar to Tesla
-#     -currencies
 #     -Daily volatility index (VIX)
-#     -Composite indices - such as NASDAQ and NYSE (from USA), FTSE100 (UK), Nikkei225 (Japan), Hang Seng and BSE Sensex (APAC) indices.
 # 4.Fourier Transform for trend analysis
 # 5. Close and open returns  (10 day, market-residualized return)
-#
-# **Checking features**
-# 1. Statistical check of data quality (heteroskedasticity, multicollinearity, or serial correlation)
-# 2. Feature importance (using XGBoost, correlations etc)
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -146,17 +138,16 @@ def get_automotive_industry_close_prices(dataset, raw_stock_data):
     return dataset
 
 
-def build_features(data):
+def build_features():
+    data = load('../../data/raw/stock_data.pickle')
     features = data['tesla']
     features = get_technical_indicators(features)
     features = get_returns(features)
     features = get_corr_assets(features)
     features = get_fourier_transforms(features)
     features = get_automotive_industry_close_prices(features, data)
-    return features
+    save(features, '../../data/interim/features.pickle')
 
 
 if __name__ == '__main__':
-    raw_stock_data = load('../../data/raw/stock_data.pickle')
-    features = build_features(raw_stock_data)
-    save(features, '../../data/interim/features.pickle')
+    build_features()
