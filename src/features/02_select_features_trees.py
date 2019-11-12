@@ -111,7 +111,7 @@ def select_features():
     feature_importances = calculate_feature_importances(features, lookback, model)
     # plot_feature_importance(feature_importances)
     selected_features, selected_features_with_lookback = threshold_features(feature_importances, lookback)
-    print('Selected features: ', selected_features)
+    print('Selected features with trees: ', selected_features)
     not_selected_features = list(set(features.columns.to_list()).difference(set(selected_features)))
     print('Not selected features: ', not_selected_features)
     save(selected_features, '../../data/interim/selected_features_labels_trees.pickle')
