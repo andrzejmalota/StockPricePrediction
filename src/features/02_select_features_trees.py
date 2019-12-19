@@ -37,7 +37,7 @@ def get_random_forrest_model(samples, targets):
 
 def get_xgb_model(samples, targets, samples_eval, targets_eval):
     regressor = xgb.XGBRegressor()
-    model = regressor.fit(samples, targets, early_stopping_rounds=3, eval_metric="mae",
+    model = regressor.fit(samples, targets, early_stopping_rounds=10, eval_metric="mae",
                           eval_set=[(samples, targets), (samples_eval, targets_eval)], verbose=True)
     return regressor
 
@@ -48,6 +48,9 @@ def split_data(data, lookback):
     imp_mean = SimpleImputer(missing_values=np.nan, strategy='median')
     imp_mean.fit(X)
     X = imp_mean.transform(X)
+    # X = pd.DataFrame(X, columns=data.columns.to_list())
+    # y = pd.DataFrame(y, columns=['Close'])
+
 
     cut = 1
     if cut:
@@ -55,6 +58,15 @@ def split_data(data, lookback):
         X = X[700:]
         y = y[700:]
     train_size = int(0.8 * X.shape[0])
+    # X = data.iloc[:, 1:]
+    X = X[:, list(range(5,13)) + list(range(14, X.shape[1]))]
+
+    # samples = X[:train_size]
+    # samples_eval = X[train_size:]
+    #
+    # targets = y[:train_size]
+    # targets_eval = y[train_size:]
+
     samples, targets = get_sliding_windows(X, y, lookback, 1, 0, train_size)
     samples_eval, targets_eval = get_sliding_windows(X, y, lookback, 1, train_size, X.shape[0] - lookback)
     return (samples, targets), (samples_eval, targets_eval)
@@ -106,17 +118,30 @@ def threshold_features(feature_importances, lookback):
 
 def select_features():
     features = load('../../data/interim/features.pickle')
-    lookback = 10
+    lookback = 1
     model = build_model(features, lookback)
-    feature_importances = calculate_feature_importances(features, lookback, model)
-    # plot_feature_importance(feature_importances)
-    selected_features, selected_features_with_lookback = threshold_features(feature_importances, lookback)
-    print('Selected features with trees: ', selected_features)
-    not_selected_features = list(set(features.columns.to_list()).difference(set(selected_features)))
-    print('Not selected features: ', not_selected_features)
-    save(selected_features, '../../data/interim/selected_features_labels_trees.pickle')
-    save(features[selected_features], '../../data/processed/selected_features_trees.pickle')
-    save(selected_features_with_lookback, '../../data/interim/selected_features_labels_with_lookback_trees.pickle')
+    xgb.plot_importance(model)
+    if lookback == 1:
+        fig = plt.figure(figsize=(8, 8))
+        plt.xticks(rotation='vertical')
+        plt.barh([i for i in range(len(model.feature_importances_))],
+                model.feature_importances_.tolist(),
+                tick_label=features.columns[list(range(6,14)) + list(range(15, features.shape[1]))])
+        plt.title('Istotność cech')
+        plt.xlim((0, 0.3))
+        plt.ylabel('Cecha')
+        plt.xlabel('Istotność')
+        plt.show()
+    else:
+        feature_importances = calculate_feature_importances(features, lookback, model)
+        plot_feature_importance(feature_importances)
+        selected_features, selected_features_with_lookback = threshold_features(feature_importances, lookback)
+        print('Selected features with trees: ', selected_features)
+        not_selected_features = list(set(features.columns.to_list()).difference(set(selected_features)))
+        print('Not selected features: ', not_selected_features)
+        save(selected_features, '../../data/interim/selected_features_labels_trees.pickle')
+        save(features[selected_features], '../../data/processed/selected_features_trees.pickle')
+        save(selected_features_with_lookback, '../../data/interim/selected_features_labels_with_lookback_trees.pickle')
 
 
 if __name__ == '__main__':

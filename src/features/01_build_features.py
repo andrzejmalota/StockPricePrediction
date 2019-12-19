@@ -41,7 +41,16 @@ def get_technical_indicators(dataset, key='Close'):
     dataset['ema'] = dataset[key].ewm(com=0.5).mean()
 
     # Create Momentum
-    dataset['momentum'] = dataset[key] - 1
+    dataset['momentum_1'] = dataset[key].diff(1)
+    dataset['momentum_10'] = dataset[key].diff(10)
+
+    # close price raw return 1, 10 days horizon
+    # dataset['returnsClosePrevRaw1'] = dataset['Close'].pct_change(1)
+    # dataset['returnsClosePrevRaw10'] = dataset['Close'].pct_change(10)
+
+    # open price raw return 1, 10 days horizon
+    # dataset['returnsOpenPrevRaw1'] = dataset['Open'].pct_change(1)
+    # dataset['returnsOpenPrevRaw10'] = dataset['Open'].pct_change(10)
 
     # Create AROON - identifing when trends are likely to change direction, n=20
     dataset['aroon_up_20'] = dataset[key].rolling(20, min_periods=0).apply(lambda x: float(np.argmax(x) + 1) / 20 * 100,
@@ -66,18 +75,6 @@ def get_technical_indicators(dataset, key='Close'):
 
     # Create OBV - On-balance volume
     dataset['obv'] = on_balance_volume(dataset[key], dataset['Volume'])
-
-    return dataset
-
-
-def get_returns(dataset):
-    # close price raw return 1, 10 days horizon
-    dataset['returnsClosePrevRaw1'] = dataset['Close'].pct_change(1)
-    dataset['returnsClosePrevRaw10'] = dataset['Close'].pct_change(10)
-
-    # open price raw return 1, 10 days horizon
-    dataset['returnsOpenPrevRaw1'] = dataset['Open'].pct_change(1)
-    dataset['returnsOpenPrevRaw10'] = dataset['Open'].pct_change(10)
 
     return dataset
 
@@ -107,26 +104,29 @@ def get_fourier_transforms(dataset):
     """ Trend extraction and filtering out noise """
     data_FT = dataset[['Date', 'Close']]
     close_fft = np.fft.fft(np.asarray(data_FT['Close'].tolist()))
-    for num in [3, 6, 9, 50, 100, 200, 500, 1000]:
+    for num in [3, 6, 9, 50, 100, 200, 500]:
         ifft = np.copy(close_fft)
         ifft[num:-num] = 0
         dataset[f'fft{num}'] = np.real((np.fft.ifft(ifft)))
+    # for num in [3, 6, 9]:
+    #     ifft = np.copy(close_fft)
+    #     ifft[num:-num] = 0
+    #     dataset[f'fft{num}'] = np.real((np.fft.ifft(ifft)))
+
+    # PLOTTING
+    fft_df = pd.DataFrame({'fft': close_fft})
+    plt.figure(figsize=(14, 7), dpi=100)
+    fft_list = np.asarray(fft_df['fft'].tolist())
+    for num_ in [3, 6, 9, 100, 500]:
+        fft_list_m10 = np.copy(fft_list); fft_list_m10[num_:-num_]=0
+        plt.plot(np.fft.ifft(fft_list_m10), label='Transformata Fouriera z {} komponenetami'.format(num_))
+    plt.plot(data_FT['Close'],  label='Cena')
+    plt.xlabel('Data')
+    plt.ylabel('USD')
+    plt.title('Cena zamknięcia oraz transformata Fouriera')
+    plt.legend()
+    plt.show()
     return dataset
-
-
-#     PLOTTING
-#     fft_df = pd.DataFrame({'fft':close_fft})
-#     plt.figure(figsize=(14, 7), dpi=100)
-#     fft_list = np.asarray(fft_df['fft'].tolist())
-#     for num_ in [3, 6, 9, 100]:
-#         fft_list_m10= np.copy(fft_list); fft_list_m10[num_:-num_]=0
-#         plt.plot(np.fft.ifft(fft_list_m10), label='Fourier transform with {} components'.format(num_))
-#     plt.plot(data_FT['Close'],  label='Real')
-#     plt.xlabel('Days')
-#     plt.ylabel('USD')
-#     plt.title('Figure 3: Tesla (close) stock prices & Fourier transforms')
-#     plt.legend()
-#     plt.show()
 
 
 def get_automotive_industry_close_prices(dataset, raw_stock_data):
@@ -142,7 +142,6 @@ def build_features():
     data = load('../../data/raw/stock_data.pickle')
     features = data['tesla']
     features = get_technical_indicators(features)
-    features = get_returns(features)
     features = get_corr_assets(features)
     features = get_fourier_transforms(features)
     features = get_automotive_industry_close_prices(features, data)
