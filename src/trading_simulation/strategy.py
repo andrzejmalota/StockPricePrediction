@@ -34,3 +34,17 @@ class SimpleStrategy(Strategy):
             raise ValueError
 
 
+class BuyAndHold(Strategy):
+    def __init__(self, sequence_len):
+        self.sequence_len = sequence_len - 1
+
+    def __str__(self):
+        return 'SimpleStrategy'
+
+    def decide(self, step):
+        if step == 0:
+            return 'buy'
+        elif step < self.sequence_len:
+            return 'hold'
+        elif step == self.sequence_len:
+            return 'sell'

@@ -5,7 +5,7 @@ import pandas as pd
 
 
 class Simulation:
-    def __init__(self, init_investment, predicted_movements, stock_returns, strategy):
+    def __init__(self, init_investment, stock_returns, strategy, predicted_movements=None):
         self.init_investment = init_investment
         self.predicted_movements = predicted_movements
         self.stock_returns = stock_returns
@@ -19,7 +19,10 @@ class Simulation:
 
     def start(self):
         for self.step in range(len(self.stock_returns)):
-            action = self.strategy.decide(self.predicted_movements[self.step])
+            if self.predicted_movements is not None:
+                action = self.strategy.decide(self.predicted_movements[self.step])
+            else:
+                action = self.strategy.decide(self.step)
             self.__make_transaction(action)
 
     def __make_transaction(self, action):
@@ -41,15 +44,32 @@ class Simulation:
         return {'return': self.return_on_investment,
                 'profit': self.profit_on_investment}
 
-    def plot_trading_history(self, stock_prices):
-        fig = plt.figure(figsize=(40, 20))
-        plt.plot(stock_prices, color='black')
+    def plot_trading_history(self, stock_prices, date):
+        date = date.iloc[-len(stock_prices-1):]
+        # date.Date = date.Date.astype('O')
+        # date.loc['Date'] = pd.d(date['Date'], format="%Y-%m-%d")
+        # date['Date'] = pd.to_datetime(date['Date'])
+        # date.reset_index(inplace=True)
+        # date.set_index('Date', inplace=True)
+        # date.drop('index', inplace=True)
+        # date['Price'] = pd.DataFrame(stock_prices[:, 0])
+
+        # date.set_index('Date', inplace=True)
+        fig, (ax1, ax2) = plt.subplots(2, sharex=True, figsize=(40, 20))
+        # date.plot(ax=ax1)
+        ax1.plot(stock_prices, color='black', label='Cena zamknięcia akcji')
         actions = pd.DataFrame(self.action_history)
         buy_idx = actions[actions[0] == 'buy'].index.to_list()
         sell_idx = actions[actions[0] == 'sell'].index.to_list()
         stock_prices = np.array(stock_prices)
-        plt.scatter(buy_idx, stock_prices[buy_idx], color='green', s=30)
-        plt.scatter(sell_idx, stock_prices[sell_idx], color='red', s=30)
+        ax1.scatter(buy_idx, stock_prices[buy_idx], color='green', s=40, label='Kupno')
+        ax1.scatter(sell_idx, stock_prices[sell_idx], color='red', s=40, label='Sprzedaż')
+        ax1.legend()
+        ax2.plot(self.account_history[:-1], label='Kapitał')
+        plt.xlabel('Krok czasowy')
+        ax1.set_ylabel('Cena akcji')
+        ax2.set_ylabel('Posiadany Kapitał')
+        ax2.legend()
         plt.show()
 
     def __calculate_daily_profit(self):
