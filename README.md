@@ -7,16 +7,16 @@ Tesla's stock closing price prediction using Deep Neural Networks.
 - Includes multiple DNN architectures based on layers: dense, LSTM, GRU, CONV1D
 - All models predictions are tested in trading simulation where actions such as buy, sell, hold are based on model's predictions
 
-Features:
 
-Technical Analysis
+-Technical Analysis
 ![Technical Analysis](reports/figures/technical_analysis.png)
 
-Fourier Transforms
+-Fourier Transforms
 ![Fourier Transforms](reports/figures/fourier_transforms.png)
 
-Correlation Matrix
-![Correlation Matrix](reports/figures/corr_matrix.png)
+-Correlation Matrix
+
+![](reports/figures/corr_matrix.png)
 
 Trading History (green=buy, red=sell)
 ![Trading History](reports/figures/trading_history.png)
