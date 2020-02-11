@@ -46,17 +46,8 @@ class Simulation:
 
     def plot_trading_history(self, stock_prices, date):
         date = date.iloc[-len(stock_prices-1):]
-        # date.Date = date.Date.astype('O')
-        # date.loc['Date'] = pd.d(date['Date'], format="%Y-%m-%d")
-        # date['Date'] = pd.to_datetime(date['Date'])
-        # date.reset_index(inplace=True)
-        # date.set_index('Date', inplace=True)
-        # date.drop('index', inplace=True)
-        # date['Price'] = pd.DataFrame(stock_prices[:, 0])
-
-        # date.set_index('Date', inplace=True)
+        stock_prices = np.insert(stock_prices, 0, stock_prices[0])
         fig, (ax1, ax2) = plt.subplots(2, sharex=True, figsize=(40, 20))
-        # date.plot(ax=ax1)
         ax1.plot(stock_prices, color='black', label='Cena zamknięcia akcji')
         actions = pd.DataFrame(self.action_history)
         buy_idx = actions[actions[0] == 'buy'].index.to_list()
@@ -68,7 +59,7 @@ class Simulation:
         ax2.plot(self.account_history[:-1], label='Kapitał')
         plt.xlabel('Krok czasowy')
         ax1.set_ylabel('Cena akcji')
-        ax2.set_ylabel('Posiadany Kapitał')
+        ax2.set_ylabel('Kapitał')
         ax2.legend()
         plt.show()
 

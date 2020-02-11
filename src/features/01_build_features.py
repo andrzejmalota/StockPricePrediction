@@ -140,12 +140,14 @@ def get_automotive_industry_close_prices(dataset, raw_stock_data):
 
 def build_features():
     data = load('../../data/raw/stock_data.pickle')
-    features = data['tesla']
+    # features = data['tesla']
+    features = data['amazon']
     features = get_technical_indicators(features)
-    features = get_corr_assets(features)
+    # features = get_corr_assets(features)
     features = get_fourier_transforms(features)
-    features = get_automotive_industry_close_prices(features, data)
-    save(features, '../../data/interim/features.pickle')
+    # features = get_automotive_industry_close_prices(features, data)
+    # save(features, '../../data/interim/features.pickle')
+    save(features, '../../data/interim/features_amazon.pickle')
 
 
 if __name__ == '__main__':

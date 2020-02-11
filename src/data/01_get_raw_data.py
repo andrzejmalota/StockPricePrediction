@@ -17,7 +17,8 @@ def get_raw_stock_data():
         'google': 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=GOOGL&interval=60min&outputsize=full&apikey=CMSZIWYWAHTR01BR',
         'bmw': 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=FRA:BMW&interval=60min&outputsize=full&apikey=CMSZIWYWAHTR01BR',
         'daimler': 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=ETR:DAI&interval=60min&outputsize=full&apikey=CMSZIWYWAHTR01BR',
-        'porshe': 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=ETR:PAH3&interval=60min&outputsize=full&apikey=CMSZIWYWAHTR01BR'}
+        'porshe': 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=ETR:PAH3&interval=60min&outputsize=full&apikey=CMSZIWYWAHTR01BR',
+        'amazon': 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AMZN&interval=60min&outputsize=full&apikey=CMSZIWYWAHTR01BR'}
 
     raw_stock_data = {}
 

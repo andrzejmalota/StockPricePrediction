@@ -6,7 +6,7 @@ import pandas as pd
 
 
 def select_features():
-    features = load('../../data/interim/features.pickle')
+    features = load('../../data/interim/features_amazon.pickle')
     date = features['Date']
     features.drop('Date', inplace=True, axis=1)
 
@@ -64,7 +64,7 @@ def select_features():
     # ftrs_pct['Date'] = date
     features['Date'] = date
     features.set_index('Date', inplace=True)
-    save(features, '../../data/processed/features_corr.pickle')
+    save(features, '../../data/processed/features_amazon_corr.pickle')
     print()
 
 

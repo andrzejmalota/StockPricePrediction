@@ -7,13 +7,16 @@ import pandas as pd
 
 if __name__ == '__main__':
     init_investment = 5000
-    targets = load('../../data/processed/targets.pickle')
+    # targets = load('../../data/processed/targets.pickle')
+    targets = load('../../data/processed/targets_amazon.pickle')
     date = pd.DataFrame(targets['Date'])
 
     # Load model predictions
     dense = load('../../data/predictions/dense.pickle')
     gru = load('../../data/predictions/gru.pickle')
+    # gru = load('../../data/predictions/gru_amazon.pickle')
     pseudo_random = load('../../data/predictions/pseudo_random.pickle')
+    # pseudo_random = load('../../data/predictions/pseudo_random_amazon.pickle')
     lstm = load('../../data/predictions/lstm.pickle')
     conv_lstm = load('../../data/predictions/conv_lstm.pickle')
     models = [pseudo_random, dense, gru, lstm, conv_lstm]
@@ -21,12 +24,12 @@ if __name__ == '__main__':
 
     # load stock return for test set
     stock_returns = load('../../data/timeseries/data_lookback_1_notbinary_notscaled.pickle')[5]
+    # stock_returns = load('../../data/timeseries/data_lookback_1_notbinary_notscaled_amazon.pickle')[5]
     stock_returns = stock_returns.reshape(1, stock_returns.shape[0]).tolist()[0]
 
     # load stock prices for test set
     stock_prices = load('../../data/timeseries/data_lookback_1_notbinary_notscaled_trading_vis.pickle')[5]
-
-    simple_strategy = SimpleStrategy()
+    # stock_prices = load('../../data/timeseries/data_lookback_1_notbinary_notscaled_trading_vis_amazon.pickle')[5]
 
     trading_return = []
     trading_profit = []
@@ -34,7 +37,7 @@ if __name__ == '__main__':
     # Run simulation for pseudo-random model's predictions
     print(model_names[0])
     for model_predictions in models[0]:
-        trading_simulation = Simulation(init_investment, stock_returns, simple_strategy, list(model_predictions))
+        trading_simulation = Simulation(init_investment, stock_returns, SimpleStrategy(), list(model_predictions))
         trading_simulation.start()
         trading_performance = trading_simulation.get_investment_performance()
         trading_profit.append(trading_performance['profit'])
@@ -45,13 +48,12 @@ if __name__ == '__main__':
     trading_performance['profit'] = np.mean(trading_profit)
     print(round(100*trading_performance['return'], 2), '%, ', round(trading_performance['profit'], 2), '$')
     print()
-    # trading_simulation.plot_trading_history(stock_prices)
+    trading_simulation.plot_trading_history(stock_prices, date)
 
     # Run simulation for rest of the models predictions
     for model_name, model_predictions in zip(model_names[1:], models[1:]):
-        simple_strategy = SimpleStrategy()
         print(model_name)
-        trading_simulation = Simulation(init_investment, stock_returns, simple_strategy, list(model_predictions))
+        trading_simulation = Simulation(init_investment, stock_returns, SimpleStrategy(), list(model_predictions))
         trading_simulation.start()
         trading_performance = trading_simulation.get_investment_performance()
         print(round(100*trading_performance['return'], 2), '%, ', round(trading_performance['profit'], 2), '$')
@@ -65,7 +67,7 @@ if __name__ == '__main__':
     trading_simulation.start()
     trading_performance = trading_simulation.get_investment_performance()
     print(round(100*trading_performance['return'], 2), '%, ', round(trading_performance['profit'], 2), '$')
-    # trading_simulation.plot_trading_history(stock_prices)
+    trading_simulation.plot_trading_history(stock_prices, date)
 
 
     print(1)

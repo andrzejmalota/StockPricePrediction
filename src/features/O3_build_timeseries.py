@@ -117,12 +117,12 @@ def build_data(features, targets, lookback=1, test_size=250, val_size=250, encod
 
 
 def build_default_data():
-    features = load('../../data/processed/features_corr.pickle')
-    targets = load('../../data/processed/targets.pickle')
-    not_relevant_days = 660
+    features = load('../../data/processed/features_amazon_corr.pickle')
+    targets = load('../../data/processed/targets_amazon.pickle')
+    not_relevant_days = 1660
     features, targets = drop_not_relevant(features, targets, not_relevant_days)
-    test_size = int(0.1 * features.shape[0])
-    val_size = int(0.1 * features.shape[0])
+    test_size = int(0.05 * features.shape[0])
+    val_size = int(0.15 * features.shape[0])
 
     for encode_binary in [True, False]:
         for scaled in [True, False]:
@@ -135,16 +135,16 @@ def build_default_data():
                                         test_size=test_size,
                                         val_size=val_size,
                                         pct_change=True)
-                save(data, '../../data/timeseries/' + name + '.pickle')
+                save(data, '../../data/timeseries/' + name + '_amazon.pickle')
 
 
 def build_data_trading_plot():
-    features = load('../../data/processed/features_corr.pickle')
-    targets = load('../../data/processed/targets.pickle')
-    not_relevant_days = 660
+    features = load('../../data/processed/features_amazon_corr.pickle')
+    targets = load('../../data/processed/targets_amazon.pickle')
+    not_relevant_days = 1660
     features, targets = drop_not_relevant(features, targets, not_relevant_days)
-    test_size = int(0.1 * features.shape[0])
-    val_size = int(0.1 * features.shape[0])
+    test_size = int(0.05 * features.shape[0])
+    val_size = int(0.15 * features.shape[0])
 
     data, name = build_data(features,
                             targets,
@@ -154,9 +154,9 @@ def build_data_trading_plot():
                             test_size=test_size,
                             val_size=val_size,
                             pct_change=False)
-    save(data, '../../data/timeseries/' + name + '_trading_vis.pickle')
+    save(data, '../../data/timeseries/' + name + '_trading_vis_amazon.pickle')
 
 
 if __name__ == '__main__':
     build_default_data()
-    # build_data_trading_plot()
+    build_data_trading_plot()
