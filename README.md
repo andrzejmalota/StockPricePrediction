@@ -13,7 +13,7 @@ Technical Analysis
 ![Technical Analysis](reports/figures/technical_analysis.png)
 
 Fourier Transforms
-![Fourier Transforms](reports/figures/fourier_transform.png)
+![Fourier Transforms](reports/figures/fourier_transforms.png)
 
 Correlation Matrix
 ![Correlation Matrix](reports/figures/corr_matrix.png)
